@@ -1,26 +1,22 @@
 pipeline {
     agent any
-    environment {
-        DOCKER_HUB_USER = 'rajk18'
-        IMAGE_NAME = 'web-app1'
-        TAG = 'v1'
-    }
     stages {
-        stage('Build Docker Image') {
+        stage('Build') {
             steps {
-                sh "docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:${TAG} ."
+                sh "docker build -t rajk18/web-app1:latest ."
             }
         }
-        stage('Push to Docker Hub') {
+        stage('Push') {
             steps {
                 docker.withRegistry('', 'docker-hub-credentials-id') {
-                    sh "docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:${TAG}"
+                    sh "docker push rajk18/web-app1:latest"
                 }
             }
         }
-        stage('Deploy to Minikube') {
+        stage('Deploy') {
             steps {
-                sh "kubectl set image deployment/web-deploy web-deploy=${DOCKER_HUB_USER}/${IMAGE_NAME}:${TAG}"
+                // Force Kubernetes to pull the latest image
+                sh "kubectl rollout restart deployment/web-deploy"
             }
         }
     }
